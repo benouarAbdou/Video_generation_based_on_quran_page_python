@@ -1,3 +1,4 @@
+from math import floor
 import requests
 import os
 import logging
@@ -7,6 +8,7 @@ from io import BytesIO
 import arabic_reshaper
 from bidi.algorithm import get_display
 import datetime
+import bidi.algorithm
 
 # Set up logging
 logging.basicConfig(filename='quran_video_creator.log', level=logging.DEBUG, 
@@ -37,16 +39,32 @@ def fetch_quran_page(page_number):
         if len(texts) != len(audio_urls):
             raise ValueError("Mismatch between number of text ayahs and audio ayahs")
 
-        return texts, audio_urls
+        # Modify texts
+        modified_texts = []
+        for ayah in text_ayahs:
+            text = ayah['text']
+            number_in_surah = ayah['numberInSurah']
+            words = text.split()
+            
+            if number_in_surah == 1:
+                
+                new_text = "" + ' '.join(words[4:])
+                
+            else:
+                new_text = text
+            
+            modified_texts.append(new_text + f" ﴿{number_in_surah}﴾")
+
+        return modified_texts, audio_urls
     except Exception as e:
         logging.error(f"Error fetching Quran page: {str(e)}")
         raise
 
-def create_text_image(text, size=(720, 1280)):
+def create_text_image(text, size=(1280, 1280)):
     try:
         image = Image.new('RGBA', size, (0, 0, 0, 0))  # Transparent background
         draw = ImageDraw.Draw(image)
-        font = ImageFont.truetype("Fonts/NotoSansArabic-Bold.ttf", 120)  # Increase font size
+        font = ImageFont.truetype("Fonts/NotoSansArabic-Bold.ttf", 100)  # Increase font size
         
         # Reshape and bidi the text
         reshaped_text = arabic_reshaper.reshape(text)
@@ -67,11 +85,11 @@ def create_text_image(text, size=(720, 1280)):
         # Reverse the lines to fix the vertical text reversal issue
         lines = lines[::-1]
         
-        y_text = (size[1] - len(lines) * 70) // 2
+        y_text = (size[1] - len(lines) * 80) // 2  # Increase spacing
         for line in lines:
             width, height = draw.textbbox((0, 0), line, font=font)[2:]
             draw.text(((size[0] - width) / 2, y_text), line, font=font, fill='white')
-            y_text += 120
+            y_text += 120  # Increase line spacing
 
         return image
     except Exception as e:
@@ -132,6 +150,33 @@ def create_video(page_number, background_image_path, output_path):
         logging.error(f"Error creating video: {str(e)}")
         raise
 
+'''def getAR(arWord, w_w=0, f_w=0):
+    arWord = arWord.strip()
+    if len(arWord) <= 0: return ''
+    startList0 = bidi.algorithm.get_display(arabic_reshaper.reshape(arWord))
+    if (not w_w) or (not f_w):
+        return startList0
+    else:
+        # return startList0
+        startList = startList0.split(' ')[::-1]
+        if len(startList) == 0: return ''
+        if len(startList) == 1: return str(startList[0])
+        n = floor( w_w / f_w )
+        for i in startList:
+            if len(i) > n: return startList0
+        tempS = ''
+        resultList = []
+        for i in range(0, len(startList)):
+            if (tempS != ''): tempS = ' ' + tempS
+            if (len(tempS) + (len(startList[i])) > n):
+                tempS = tempS + "\n"
+                resultList.append(tempS)
+                tempS = startList[i]
+            else:
+                tempS = startList[i] + tempS
+                if i == (len(startList)-1):
+                    resultList.append(tempS)
+        return ''.join(resultList)'''
 # Usage
 try:
     now = datetime.datetime.now()
