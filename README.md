@@ -74,15 +74,15 @@ The **Quran Video Creator** is a Python-based application designed to create vid
 
 1. **Video Creation Time:**
 
-- It takes a long time to make a video.
+- It takes a long time to make a video, it takes between 5 to 20 min to generate a video for a page from quran, it depends on the number of ayahs.
 
 2. **Silence Between Ayahs:**
 
-- There is some small silence between each ayah.
+- There is some small silence between each ayah, this silence is originated from the api audio itself.
 
 3. **Text Formatting:**
 
-- The text formatting isn't perfect.
+- The text formatting isn't perfect, the order of words is correct , but lines distribution and tachkil are missing.
 
 ## Log File
 
